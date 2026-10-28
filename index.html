@@ -56,6 +56,7 @@
         ::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 9999px; }
         .paper-card { background: #FFFFFF; border: 1px solid #E4E4E7; box-shadow: 0 10px 30px -10px rgba(24, 24, 27, 0.04); transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
         .paper-card:hover { box-shadow: 0 20px 40px -15px rgba(24, 24, 27, 0.07); }
+        .sealed-blur { filter: blur(7px); user-select: none; pointer-events: none; }
     </style>
 </head>
 <body class="antialiased selection:bg-zinc-900 selection:text-white">
@@ -83,6 +84,7 @@
             </div>
             <nav class="flex items-center gap-4">
                 <button onclick="openGalleryView()" class="px-3.5 py-1.5 rounded-full bg-zinc-900 text-white cursor-pointer">50 Fotoğraflık Galeri</button>
+                <a href="#ses-kapsulu" class="hover:text-zinc-900">Ses Kapsülü</a>
             </nav>
         </div>
     </header>
@@ -94,7 +96,6 @@
 
         <div class="absolute inset-0 flex flex-col justify-between p-6 sm:p-12 md:p-16 text-white">
             <div class="flex items-center justify-end gap-2 pt-12">
-                <!-- VİTRİN FOTOĞRAFI DEĞİŞTİRME BUTONU BURADA -->
                 <button type="button" onclick="triggerFeaturedPhotoSelect()" class="cursor-pointer inline-flex items-center gap-2 px-5 py-3 rounded-full bg-black/60 hover:bg-black/80 text-white text-xs font-medium backdrop-blur-md border border-white/30 shadow-lg">
                     📸 Vitrin Fotoğrafını Değiştir
                 </button>
@@ -151,6 +152,39 @@
         </div>
     </section>
 
+    <!-- SES KAPSÜLÜ VE GERİ SAYIM -->
+    <section id="ses-kapsulu" class="py-24 px-6 bg-white">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="font-serif text-4xl text-zinc-900 mb-4">1. Yıl Ses Kapsülümüz</h2>
+            <p class="text-sm text-zinc-500 mb-10">29 Nisan 00:00'da açılacak.</p>
+
+            <div class="max-w-xl mx-auto mb-16 p-6 rounded-3xl bg-alabaster border border-zinc-200">
+                <span class="text-[11px] uppercase tracking-widest text-zinc-400 block mb-4">Kapsülün Açılmasına Kalan Süre</span>
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="bg-white p-3 rounded-xl border border-zinc-200"><span id="cdDays" class="text-2xl font-serif">180</span><span class="block text-[10px]">Gün</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-zinc-200"><span id="cdHours" class="text-2xl font-serif">00</span><span class="block text-[10px]">Saat</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-zinc-200"><span id="cdMinutes" class="text-2xl font-serif">00</span><span class="block text-[10px]">Dakika</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-zinc-200"><span id="cdSeconds" class="text-2xl font-serif">00</span><span class="block text-[10px]">Saniye</span></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left">
+                <div class="paper-card rounded-3xl p-7">
+                    <h3 class="font-serif text-2xl text-zinc-900 mb-2">Mert'in Ses Kaydı</h3>
+                    <p class="text-xs text-zinc-500 mb-4">29 Nisan'da açılmak üzere ses dosyası yükle.</p>
+                    <input type="file" accept="audio/*" class="text-xs" onchange="handleAudioUpload(1, event)">
+                    <div id="audioStatus1" class="mt-3 text-xs text-emerald-600 font-medium"></div>
+                </div>
+                <div class="paper-card rounded-3xl p-7">
+                    <h3 class="font-serif text-2xl text-zinc-900 mb-2">Nehir'in Ses Kaydı</h3>
+                    <p class="text-xs text-zinc-500 mb-4">29 Nisan'da açılmak üzere ses dosyası yükle.</p>
+                    <input type="file" accept="audio/*" class="text-xs" onchange="handleAudioUpload(2, event)">
+                    <div id="audioStatus2" class="mt-3 text-xs text-emerald-600 font-medium"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- TOAST -->
     <div id="toastBox" class="fixed top-20 right-6 z-50 pointer-events-none opacity-0 translate-y-[-10px] transition-all duration-300">
         <div class="bg-zinc-900 text-white text-xs px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2">
@@ -161,7 +195,7 @@
 
     <!-- JAVASCRIPT -->
     <script>
-        const STORAGE_KEY = 'zaman_kapsulu_6ay_v5';
+        const STORAGE_KEY = 'zaman_kapsulu_6ay_v6';
 
         function generateDefault50Gallery() {
             const items = [];
@@ -174,9 +208,11 @@
         const defaultState = {
             name1: 'Mert',
             name2: 'Nehir',
+            unlockDateISO: '2027-04-29T00:00:00',
             featuredPhoto: { url: '', date: '29 EKİM • İLK YARIM YILIMIZ', caption: '"Seninle geçen her mevsim, favori mevsimim."' },
             gallery: generateDefault50Gallery(),
-            notes: { 1: { text: '' }, 2: { text: '' } }
+            notes: { 1: { text: '' }, 2: { text: '' } },
+            audioMeta: { 1: { url: '', name: '' }, 2: { url: '', name: '' } }
         };
 
         let appState = loadState();
@@ -232,6 +268,7 @@
                                 renderFeaturedPhoto();
                                 renderGallery();
                                 renderNotes();
+                                renderAudioStatus();
                             }
                         });
                     } catch (e) {}
@@ -275,7 +312,7 @@
                 appState.featuredPhoto.url = compressed;
                 renderFeaturedPhoto();
                 await saveStateToFirestore();
-                showToast('Vitrin fotoğrafı güncellendi ve buluta kaydedildi ✓');
+                showToast('Vitrin fotoğrafı buluta kaydedildi ✓');
             }
         }
 
@@ -316,7 +353,7 @@
                 appState.gallery[index].url = compressed;
                 await saveStateToFirestore();
                 renderGallery();
-                showToast(`#${String(index + 1).padStart(2, '0')} numaralı fotoğraf buluta eklendi ✓`);
+                showToast('Galeriye eklendi ve buluta kaydedildi ✓');
             }
         }
 
@@ -360,11 +397,52 @@
             showToast('Not buluta kaydedildi ✓');
         }
 
+        async function handleAudioUpload(slot, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            showToast('Ses dosyası buluta yükleniyor...');
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                appState.audioMeta[slot] = { url: reader.result, name: file.name };
+                await saveStateToFirestore();
+                renderAudioStatus();
+                showToast('Ses kaydı mühürlendi ve buluta kaydedildi ✓');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderAudioStatus() {
+            [1, 2].forEach(slot => {
+                const statusEl = document.getElementById(`audioStatus${slot}`);
+                if (statusEl && appState.audioMeta[slot].name) {
+                    statusEl.textContent = `✓ Mühürlenen Ses: ${appState.audioMeta[slot].name}`;
+                }
+            });
+        }
+
+        function updateCountdown() {
+            const target = new Date(appState.unlockDateISO).getTime();
+            const diff = target - Date.now();
+            if (diff <= 0) return;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / 1000 / 60) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            document.getElementById('cdDays').textContent = String(days).padStart(2, '0');
+            document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('cdMinutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('cdSeconds').textContent = String(seconds).padStart(2, '0');
+        }
+
         window.onload = function() {
             initCloudSync();
             renderFeaturedPhoto();
             renderGallery();
             renderNotes();
+            renderAudioStatus();
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
         };
     </script>
 </body>
