@@ -51,7 +51,7 @@
     <!-- Firebase SDK (Modular v9) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Senin Firebase Yapılandırman
         const firebaseConfig = {
@@ -80,7 +80,7 @@
             let imageUrl = "";
             if (imageInput.files.length > 0) {
                 const file = imageInput.files[0];
-                imageUrl = await toBase64(file); // Görseli küçük boyutlu Base64 formatına çeviriyoruz
+                imageUrl = await toBase64(file);
             }
 
             try {
@@ -98,7 +98,6 @@
             }
         };
 
-        // Resmi base64 formatına çeviren yardımcı fonksiyon
         function toBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -108,7 +107,7 @@
             });
         }
 
-        // Firestore'dan verileri anlık (real-time) dinleme
+        // Firestore'dan verileri anlık dinleme
         const q = query(collection(db, "capsuleItems"), orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             const listEl = document.getElementById('capsuleList');
